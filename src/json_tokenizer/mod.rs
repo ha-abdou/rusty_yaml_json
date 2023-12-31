@@ -9,49 +9,59 @@ pub fn json_tokenizer(str: &str) -> Vec<JsonToken> {
 
     loop {
         if let Some(char) = chars.peek() {
-            println!("===> loop: {:?}", char);
+            if let Some(ch) = str.chars().peekable().nth(i) {
+                if char != &ch {
+                    println!(
+                        "json_tokenizer mismatch at: {:?} betwin {:?} {:?}",
+                        i, char, ch
+                    );
+                    debug_json_vec_token(&tokens);
+                    panic!("json_tokenizer mismatch");
+                }
+            }
+
             match char {
                 '{' => {
                     tokens.push(creat_json_token(JsonTokenTypes::OpenBrace, i));
                     chars.next();
                     i += 1;
-                },
+                }
                 '}' => {
                     tokens.push(creat_json_token(JsonTokenTypes::CloseBrace, i));
                     chars.next();
                     i += 1;
-                },
+                }
                 '[' => {
                     tokens.push(creat_json_token(JsonTokenTypes::OpenBracket, i));
                     chars.next();
                     i += 1;
-                },
+                }
                 ']' => {
                     tokens.push(creat_json_token(JsonTokenTypes::CloseBracket, i));
                     chars.next();
                     i += 1;
-                },
+                }
                 ':' => {
                     tokens.push(creat_json_token(JsonTokenTypes::Colon, i));
                     chars.next();
                     i += 1;
-                },
+                }
                 ',' => {
                     tokens.push(creat_json_token(JsonTokenTypes::Comma, i));
                     chars.next();
                     i += 1;
-                },
+                }
                 '"' => {
                     tokens.push(creat_json_token(JsonTokenTypes::DoubleQuote, i));
                     chars.next();
                     i += 1;
 
                     while let Some(char) = chars.next() {
+                        i += 1;
                         if char == '"' {
                             tokens.push(creat_json_token(JsonTokenTypes::DoubleQuote, i));
                             break;
                         }
-                        i += 1;
                     }
                 }
                 'n' => {
@@ -73,19 +83,21 @@ pub fn json_tokenizer(str: &str) -> Vec<JsonToken> {
                     if char.is_digit(10) {
                         let char_start = i;
 
-                        while let Some(char) = chars.next() {
-                            if !char.is_digit(10) && char != '.' {
-                                tokens.push(creat_json_token(JsonTokenTypes::Number, char_start));
-                                // let char = chars.next_back();
-                                println!("===> {:?}", char);
-                                println!(
-                                    "===> {:?}",
-                                    str.chars().skip(i).take(1).collect::<String>()
-                                );
+                        let mut chars2 = str.chars().peekable();
+                        chars2.nth(char_start);
+                        let mut end = char_start;
+
+                        while let Some(char) = chars2.peek() {
+                            if !(*char).is_digit(10) && *char != '.' {
                                 break;
                             }
-                            i += 1;
+                            end += 1;
+                            chars2.next();
                         }
+
+                        tokens.push(creat_json_token(JsonTokenTypes::Number, char_start));
+                        i = end + 1;
+                        chars.nth(end - char_start);
                     } else {
                         i += 1;
                         chars.next();

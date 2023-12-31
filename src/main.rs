@@ -13,7 +13,6 @@ fn main() {
   \"key2\": false,
   \"key3\": 123,
   \"key5\": null,
-
 }";
 //  \"aa\": [\"lolo\"],
 //   \"sss\": 012,
