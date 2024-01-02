@@ -27,7 +27,7 @@ pub struct JsonNodeBoolean {
 pub struct JsonNodeArray {
     pub start: usize,
     pub end: usize,
-    pub value: Vec<JsonNodeArrayValues>,
+    pub value: Vec<JsonNodeObjectValues>,
 }
 
 #[derive(Debug)]
@@ -53,12 +53,5 @@ pub enum JsonNodeObjectValues {
     JsonNodeBoolean(JsonNodeBoolean),
     JsonNodeArray(JsonNodeArray),
     JsonNodeObject(JsonNodeObject),
-}
-
-#[derive(Debug)]
-pub enum JsonNodeArrayValues {
-    JsonNodeString(JsonNodeString),
-    JsonNodeNull(JsonNodeNull),
-    JsonNodeNumber(JsonNodeNumber),
-    JsonNodeBoolean(JsonNodeBoolean),
+    EndOfObject
 }

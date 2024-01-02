@@ -9,9 +9,7 @@ use crate::json_parser::json_parser;
 fn main() {
     let str = "{
   \"key3\": \"value1\",
-  \"key\": true,
-  \"key2\": false,
-  \"key3\": 123,
+  \"key\": [true, false, 111.111, \"sss\"],
   \"key5\": null,
 }";
 //  \"aa\": [\"lolo\"],

@@ -1,6 +1,9 @@
 pub mod types;
 
-use crate::{json_tokenizer::{JsonToken, JsonTokenTypes}, json_parser::types::JsonNodeNumber};
+use crate::{
+    json_parser::types::{JsonNodeArray, JsonNodeNumber},
+    json_tokenizer::{JsonToken, JsonTokenTypes},
+};
 pub use types::{
     JsonNodeBoolean, JsonNodeNull, JsonNodeObject, JsonNodeObjectProprty, JsonNodeObjectValues,
     JsonNodeString,
@@ -68,7 +71,11 @@ fn get_next_object_property(
     let end: usize = end_token.at;
     let start = start + 1;
 
-    let key = str.chars().skip(start).take(end - start - 1).collect::<String>();
+    let key = str
+        .chars()
+        .skip(start)
+        .take(end - start - 1)
+        .collect::<String>();
 
     *cursor += 1;
 
@@ -83,12 +90,30 @@ fn get_next_object_property(
     }
 
     *cursor += 1;
+    let value = get_next_value(str, tokens, cursor);
 
     let token = tokens.get(*cursor).unwrap();
 
+    if !matches!(token.token_type, JsonTokenTypes::Comma) {
+        *cursor += 1;
+    }
+
+    let res = JsonNodeObjectProprty {
+        start,
+        end: token.at,
+        key,
+        value,
+    };
+    res
+}
+
+fn get_next_value(str: &str, tokens: &Vec<JsonToken>, cursor: &mut usize) -> JsonNodeObjectValues {
+    let token = tokens.get(*cursor).unwrap();
+
+    println!("get_next_value ===> {:?}", token.token_type);
+
     use JsonNodeObjectValues as JV;
     use JsonTokenTypes as JT;
-    println!("current token: {:?}", token.token_type);
     let value = match token.token_type {
         JT::DoubleQuote => {
             let start = token.at + 1;
@@ -96,7 +121,7 @@ fn get_next_object_property(
             let token = tokens.get(*cursor).unwrap();
             let end = token.at;
 
-            let value = str[start..end-1].to_string();
+            let value = str[start..end - 1].to_string();
             let res = JV::JsonNodeString(JsonNodeString { start, end, value });
 
             res
@@ -143,34 +168,49 @@ fn get_next_object_property(
 
             let value = str[start..end].to_string();
 
-            let res = JV::JsonNodeNumber(JsonNodeNumber {
-                start,
-                end,
-                value,
-            });
-            
-            res
-        }
-        _ => {
-            let res = JV::JsonNodeNull(JsonNodeNull {
-                start: token.at + 1,
-            });
+            let res = JV::JsonNodeNumber(JsonNodeNumber { start, end, value });
 
             res
         }
+        JT::OpenBracket => {
+            let start = token.at;
+            let mut value: Vec<JsonNodeObjectValues> = Vec::new();
+
+            loop {
+                *cursor += 1;
+
+                let token = tokens.get(*cursor).unwrap();
+
+                println!("match ===> {:?}", token.token_type);
+
+                if matches!(token.token_type, JT::Comma) {
+                    // todo hanlde trailing comma
+                    *cursor += 1;
+                }
+
+                let token = tokens.get(*cursor).unwrap();
+
+                if matches!(token.token_type, JT::CloseBracket) {
+                    break;
+                }
+
+                let v = get_next_value(str, tokens, cursor);
+
+                if matches!(v, JV::EndOfObject) {
+                    break;
+                }
+
+                value.push(v);        
+            }
+
+            let end = tokens.get(*cursor).unwrap().at;
+
+            let res = JV::JsonNodeArray(JsonNodeArray { start, end, value });
+
+            res
+        }
+        _ => JV::EndOfObject,
     };
 
-    let token = tokens.get(*cursor).unwrap();
-
-    if !matches!(token.token_type, JsonTokenTypes::Comma) {
-        *cursor += 1;
-    }
-
-    let res = JsonNodeObjectProprty {
-        start,
-        end: token.at,
-        key,
-        value,
-    };
-    res
+    value
 }
