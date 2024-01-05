@@ -34,7 +34,7 @@ pub struct JsonNodeArray {
 pub struct JsonNodeObject {
     pub start: usize,
     pub end: usize,
-    pub values: Box<Vec<JsonNodeObjectProprty>>,
+    pub value: Box<Vec<JsonNodeObjectProprty>>,
 }
 
 #[derive(Debug)]

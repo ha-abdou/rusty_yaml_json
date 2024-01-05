@@ -1,27 +1,36 @@
-
-pub mod json_tokenizer;
 pub mod json_parser;
+pub mod json_tokenizer;
 
-
-use crate::json_tokenizer::{json_tokenizer, debug_json_vec_token};
 use crate::json_parser::json_parser;
+use crate::json_tokenizer::{debug_json_vec_token, json_tokenizer};
 
 fn main() {
     let str = "{
-  \"key3\": \"value1\",
-  \"key\": [true, false, 111.111, \"sss\"],
-  \"key5\": null,
+    \"ss\": [{
+        \"sssd\": 123
+    }],
 }";
-//  \"aa\": [\"lolo\"],
-//   \"sss\": 012,
-//  \"sasdasdss\": 1.2,
+    //  \"aa\": [\"lolo\"],
+    //   \"key\": [true, false, 111.111, \"sss\"],
+    //   \"sss\": 012,
+    //  \"sasdasdss\": 1.2,
+
+    // \"key3\": \"value1\",
+    // \"key1\": {
+    //   \"sub 1\": 111,
+    // },
+    // \"key5\": null,
+
     let tokens = json_tokenizer(&str);
-    
-    debug_json_vec_token(&tokens);
-    
+
+    // debug_json_vec_token(&tokens);
+
     let astree = json_parser(&str, &tokens);
 
     println!("astree: {astree:#?}");
+
+    // println!("{:?}", str.chars().nth(6).offset());
+    // println!("{:?}", &str[5..6]);
 }
 
 // pub fn to_yaml_one_passe_parser (str: &str) {
